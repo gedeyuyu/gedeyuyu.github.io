@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThaveX Web Interface</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #loadingScreen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .loading-text {
+            color: #fff;
+            font-size: 32px;
+            font-weight: bold;
+            opacity: 0;
+            animation: fadeInOut 3s ease-in-out forwards;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: scale(0.9); }
+            50% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(1.1); }
+        }
+
+        .container {
+            background-color: white;
+            width: 90%;
+            max-width: 400px;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        .user-info {
+            background-color: #222;
+            color: #00ff00;
+            padding: 8px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .toggle-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #e0e0e0;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .toggle-item label {
+            font-size: 16px;
+            font-weight: 500;
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .apply-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+
+        .apply-button.active {
+            background-color: #28a745;
+        }
+
+        .apply-button:hover {
+            background-color: #0056b3;
+        }
+
+        .expiration-info {
+            font-size: 12px;
+            color: #ff0000;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Loading Screen -->
+<div id="loadingScreen">
+    <div class="loading-text">SETTING BY THAVE</div>
+</div>
+
+<!-- Main Content -->
+<div class="container" id="mainContent">
+    <div class="title">ThaveX</div>
+    <div class="subtitle">Web Interface v2</div>
+
+    <div class="user-info" id="userDeviceInfo">Loading device info...</div>
+
+    <div class="toggle-item">
+        <label>Activated By ThaveX 38+ Feature</label>
+        <input type="checkbox" class="toggle-switch">
+    </div>
+
+    <div class="toggle-item">
+        <label>Sensitivity Booster</label>
+        <input type="checkbox" class="toggle-switch">
+    </div>
+
+    <div class="toggle-item">
+        <label>Google Package Cleaner
+        </label>
+        <input type="checkbox" class="toggle-switch">
+    </div>
+
+    <div class="toggle-item">
+        <label>Chace Cleaner</label>
+        <input type="checkbox" class="toggle-switch">
+    </div>
+
+    <div class="toggle-item">
+        <label>Aim FOV +0.15 [Only on Filee 50% +]</label>
+        <input type="checkbox" class="toggle-switch">
+    </div>
+
+    <button class="apply-button" id="applyButton">APPLY</button>
+    
+    <div class="expiration-info" id="expirationInfo"></div>
+</div>
+
+<script>
+    const applyButton = document.getElementById('applyButton');
+    const toggles = document.querySelectorAll('.toggle-switch');
+    const userDeviceInfo = document.getElementById('userDeviceInfo');
+    const loadingScreen = document.getElementById('loadingScreen');
+    const mainContent = document.getElementById('mainContent');
+    const expirationInfo = document.getElementById('expirationInfo');
+
+    function showMainContent() {
+        loadingScreen.style.opacity = '0';
+        setTimeout(() => {
+            loadingScreen.style.display = 'none';
+            mainContent.style.opacity = '1';
+        }, 1000);
+    }
+
+    window.onload = () => {
+        getDeviceInfo();
+        checkExpiration();
+        setTimeout(showMainContent, 3000);
+    };
+
+    function getDeviceInfo() {
+        const userAgent = navigator.userAgent;
+        let device = 'Unknown Device';
+        let os = 'Unknown OS';
+
+        if (/android/i.test(userAgent)) {
+            device = 'Android Device';
+            os = userAgent.match(/Android\s([0-9.]*)/i)[1] || 'Unknown Version';
+        } else if (/iphone/i.test(userAgent)) {
+            device = 'iPhone';
+            os = userAgent.match(/OS\s([0-9_]*)/i)[1].replace(/_/g, '.') || 'Unknown Version';
+        } else if (/ipad/i.test(userAgent)) {
+            device = 'iPad';
+            os = userAgent.match(/OS\s([0-9_]*)/i)[1].replace(/_/g, '.') || 'Unknown Version';
+        }
+
+        userDeviceInfo.textContent = `${device} - OS Version: ${os}`;
+    }
+
+    function checkExpiration() {
+        const installationDate = localStorage.getItem('installationDate');
+        const currentDate = new Date();
+        const expirationDays = 7;
+
+        if (!installationDate) {
+            localStorage.setItem('installationDate', currentDate);
+            expirationInfo.textContent = "You have 7 days from installation.";
+        } else {
+            const installed = new Date(installationDate);
+            const diffTime = currentDate - installed;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays > expirationDays) {
+                expirationInfo.textContent = "Your access has expired.";
+                applyButton.disabled = true; // Disable the apply button
+            } else {
+                const daysLeft = expirationDays - diffDays;
+                const totalSecondsLeft = (expirationDays * 24 * 60 * 60) - (diffTime / 1000);
+                const hoursLeft = Math.floor(totalSecondsLeft / 3600);
+                const minutesLeft = Math.floor((totalSecondsLeft % 3600) / 60);
+                const secondsLeft = Math.floor(totalSecondsLeft % 60);
+                expirationInfo.textContent = `Days left: ${daysLeft}, Time left: ${hoursLeft}h ${minutesLeft}m ${secondsLeft}s`;
+            }
+        }
+    }
+
+    function checkToggleStatus() {
+        const anyActive = Array.from(toggles).some(toggle => toggle.checked);
+        if (anyActive) {
+            applyButton.classList.add('active');
+        } else {
+            applyButton.classList.remove('active');
+        }
+    }
+
+    toggles.forEach(toggle => {
+        toggle.addEventListener('change', checkToggleStatus);
+    });
+
+    applyButton.addEventListener('click', () => {
+        alert('Settings applied!');
+        window.location.href = 'intent://open#Intent;scheme=freefire;package=com.dts.freefireth;end';
+    });
+</script>
+
+</body>
+</html>
